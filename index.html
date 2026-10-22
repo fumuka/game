@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>円を増やすゲーム</title>
+<style>
+:root{--bg:#f3f6fb;--panel:#fff;--text:#182230;--muted:#657184;--accent:#2563eb;--accent2:#16a34a;--border:#e2e8f0;--gold:#f59e0b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 5%,#e0f2fe 0,transparent 28%),radial-gradient(circle at 90% 20%,#ede9fe 0,transparent 24%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:linear-gradient(120deg,#142b55,#2563eb);color:#fff;padding:22px max(18px,calc((100% - 1120px)/2));position:relative;overflow:hidden}header:after{content:'🏙️　💴　🏢　🌳';position:absolute;right:22px;bottom:8px;font-size:2rem;opacity:.28;white-space:nowrap}
+header h1{margin:0 0 6px;font-size:clamp(1.45rem,3vw,2rem)}header p{margin:0;color:#dbeafe}
+main{max-width:1120px;margin:20px auto;padding:0 16px 36px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.stat,.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 14px #1e293b0a}
+.stat{padding:15px}.stat .label{font-size:.84rem;color:var(--muted)}.stat .value{font-size:clamp(1.1rem,2.3vw,1.65rem);font-weight:800;margin-top:5px;overflow-wrap:anywhere}
+.layout{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}.panel{padding:18px;margin-bottom:16px}.panel h2{font-size:1.08rem;margin:0 0 14px}.muted{color:var(--muted);font-size:.9rem}
+.click-area{text-align:center;padding:16px 6px 10px;background:linear-gradient(180deg,#eaf7ff,#fff)}.day-meter{border:1px solid #bfdbfe;background:linear-gradient(120deg,#eff8ff,#fff);border-radius:15px;padding:14px 16px;margin-bottom:16px}.day-meter-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:800;margin-bottom:9px}.meter-track{height:15px;border-radius:99px;background:#dbeafe;overflow:hidden;border:1px solid #bfdbfe}.meter-fill{height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#2563eb);border-radius:99px;transition:width .25s}.day-sub{font-size:.82rem;color:#64748b;margin-top:7px}.coin{font-size:3.4rem;filter:drop-shadow(0 5px 2px #fbbf2440)}.hero-illustration{display:flex;justify-content:center;align-items:center;gap:10px;margin:2px 0 12px}.hero-person{font-size:4rem;background:linear-gradient(145deg,#dbeafe,#f0f9ff);border:3px solid white;border-radius:28px;padding:9px 15px;box-shadow:0 5px 16px #1d4ed822}.hero-bubble{background:white;border:1px solid #bfdbfe;border-radius:18px;padding:10px 13px;font-weight:750;color:#1d4ed8;box-shadow:0 4px 10px #1d4ed810}.click-button{width:min(100%,320px);min-height:130px;border:0;border-radius:24px;background:linear-gradient(145deg,#2563eb,#1d4ed8);color:white;font-size:1.25rem;font-weight:800;box-shadow:0 8px 0 #173e9d;cursor:pointer;transition:transform .08s}.click-button:active{transform:translateY(5px);box-shadow:0 3px 0 #173e9d}.click-button small{display:block;font-weight:500;font-size:.88rem;margin-top:8px;color:#dbeafe}
+button{font:inherit;cursor:pointer}.btn{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:10px;padding:9px 12px;font-weight:650}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.green{background:var(--accent2);border-color:var(--accent2);color:white}.btn:disabled{opacity:.45;cursor:not-allowed}
+.list{display:grid;gap:10px}.item{border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.item h3{font-size:.98rem;margin:0 0 4px}.item p{font-size:.84rem;color:var(--muted);margin:0}.item .right{text-align:right;min-width:105px}.item .price{font-weight:800;margin-bottom:6px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}.tab{border:1px solid var(--border);background:#fff;padding:9px 13px;border-radius:999px;font-weight:700}.tab.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
+.view{display:none}.view.active{display:block}.notice{padding:10px 12px;background:#eff6ff;border-radius:10px;color:#1e40af;font-size:.9rem;margin-top:12px}.log{max-height:170px;overflow:auto;font-size:.86rem;color:var(--muted);padding-left:20px}.footer{display:flex;gap:8px;flex-wrap:wrap}.progress{height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:var(--accent2);width:0}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}main{margin-top:12px}.panel{padding:15px}.item{align-items:flex-start}.item .right{min-width:90px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>💴 円を増やすゲーム</h1>
+  <p>働いて、稼いで、事業を育てて、資産100億円を目指そう。</p>
+</header>
+<main>
+  <section class="stats">
+    <div class="stat"><div class="label">所持金</div><div class="value" id="cash">¥0</div></div>
+    <div class="stat"><div class="label">1日の収入</div><div class="value" id="income">¥0</div></div>
+    <div class="stat"><div class="label">総資産</div><div class="value" id="assets">¥0</div></div>
+    <div class="stat"><div class="label">経過日数</div><div class="value" id="day">1日目</div></div>
+  </section>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="home">ホーム</button>
+    <button class="tab" data-tab="career">職業・昇進</button>
+    <button class="tab" data-tab="business">事業</button>
+    <button class="tab" data-tab="invest">株式投資</button>
+    <button class="tab" data-tab="prestige">転生</button>
+  </div>
+
+  <section id="home" class="view active">
+    <div class="day-meter">
+      <div class="day-meter-top"><span>☀️ 今日の進み具合 <strong id="meterDay">1日目</strong></span><span id="dayRemaining">次の日まで 10.0秒</span></div>
+      <div class="meter-track"><div id="dayMeterFill" class="meter-fill"></div></div>
+      <div class="day-sub">メーターが満タンになると次の日へ。給料と事業収益がまとめて入ります。</div>
+    </div>
+    <div class="layout">
+      <div>
+        <div class="panel click-area">
+          <div class="hero-illustration"><div class="hero-person">🧑‍💼</div><div class="hero-bubble">コツコツ稼いで<br>資産を増やそう！</div></div>
+          <div class="coin">🪙</div>
+          <h2>クリックしてお金を稼ごう！</h2>
+          <button id="clickBtn" class="click-button">お金を稼ぐ<small id="clickValue">1クリック：¥1</small></button>
+          <p class="muted">クリック収入は職業と強化で増やせます。</p>
+        </div>
+        <div class="panel">
+          <h2>クリック強化</h2>
+          <div id="upgradeList" class="list"></div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <h2>あなたのプロフィール</h2>
+          <div id="profile"></div>
+          <div class="notice">ゲーム内では10秒ごとに1日進みます。1日の終わりに、給料と事業収益がまとめて入金されます。</div>
+        </div>
+        <div class="panel">
+          <h2>最近の出来事</h2>
+          <ul id="log" class="log"><li>ゲーム開始！まずはクリックして稼ごう。</li></ul>
+          <div class="footer"><button class="btn" id="saveBtn">今すぐセーブ</button><button class="btn" id="resetBtn">最初からやり直す</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="career" class="view">
+    <div class="panel">
+      <h2>職業を選ぶ</h2>
+      <p class="muted">転職すると職業ランクはリセットされますが、所持金・事業・株式は維持されます。</p>
+      <div id="jobList" class="list"></div>
+    </div>
+    <div class="panel">
+      <h2>昇進</h2>
+      <div id="promotion"></div>
+    </div>
+  </section>
+
+  <section id="business" class="view">
+    <div class="panel">
+      <h2>事業を購入</h2>
+      <p class="muted">事業を購入すると、1日ごとに収益が入ります。同じ事業を複数購入できます。</p>
+      <div id="businessList" class="list"></div>
+      <div class="notice" id="businessSummary"></div>
+    </div>
+  </section>
+
+  <section id="invest" class="view">
+    <div class="panel">
+      <h2>株式投資</h2>
+      <p class="muted">架空企業の株価は一定間隔で変動します。安く買って高く売ることを目指そう。配当は保有株数に応じてゲーム内日ごとに入ります。</p>
+      <div id="stockList" class="list"></div>
+      <div class="notice">※株価変動はゲーム用の簡易シミュレーションで、実際の市場とは関係ありません。</div>
+    </div>
+  </section>
+
+  <section id="prestige" class="view">
+    <div class="panel">
+      <h2>転生（資産リセット）</h2>
+      <p>総資産が <strong>¥100,000,000（1億円）</strong> 以上になると転生できます。転生すると所持金・職業ランク・事業・株式をリセットし、永続収入ボーナスを獲得します。</p>
+      <div id="prestigeInfo"></div>
+      <button id="prestigeBtn" class="btn primary">転生する</button>
+      <p class="muted">※試作版の仮バランスです。転生回数ごとに自動収入とクリック収入が+10%されます。</p>
+    </div>
+  </section>
+</main>
+<script>
+const JOBS = [
+ {id:'freeter',name:'フリーター',emoji:'🧑‍💻',salary:25,click:1.5,desc:'クリック収入が得意。手を動かして稼ぐ。'},
+ {id:'big',name:'会社員（大企業）',emoji:'🏢',salary:180,click:1,desc:'給料と昇進による大きな成長。'},
+ {id:'small',name:'会社員（中小企業）',emoji:'💼',salary:100,click:1.1,desc:'バランス型。事業購入が少しお得。'},
+ {id:'public',name:'公務員',emoji:'🏛️',salary:130,click:0.9,desc:'安定した給料で着実に資産形成。'},
+ {id:'youtuber',name:'YouTuber',emoji:'🎥',salary:45,click:1.25,desc:'人気が出ると収入が伸びる。'}
+];
+const BUSINESSES = [
+ {id:'cafe',name:'カフェ',emoji:'☕',cost:10000,profit:20,desc:'小さく始められるお店。'},
+ {id:'delivery',name:'配送会社',emoji:'🚚',cost:100000,profit:250,desc:'街の物流を支える。'},
+ {id:'it',name:'IT企業',emoji:'💻',cost:1000000,profit:3000,desc:'大きな利益を狙える事業。'}
+];
+const STOCKS = [
+ {id:'sakura',name:'さくらテック',symbol:'SKT',price:120,dividend:0.015},
+ {id:'mirai',name:'みらい食品',symbol:'MRF',price:85,dividend:0.02},
+ {id:'aozora',name:'青空エナジー',symbol:'AOE',price:240,dividend:0.012},
+ {id:'ninja',name:'ニンジャ物流',symbol:'NJL',price:60,dividend:0.018}
+];
+const fmt = n => '¥' + Math.floor(Math.max(0,n)).toLocaleString('ja-JP');
+const fmtSigned = n => (n>=0?'+':'−') + fmt(Math.abs(n));
+const initialState = () => ({
+ cash:0,day:1,job:'freeter',rank:1,clickLevel:1,clicks:0,prestige:0,
+ businesses:{cafe:0,delivery:0,it:0},
+ stocks:Object.fromEntries(STOCKS.map(s=>[s.id,{shares:0,avg:0,price:s.price,change:0}])),
+ lastDayPaid:1,lastDividendDay:1,log:['ゲーム開始！まずはクリックして稼ごう。'],lastSaved:Date.now()
+});
+let state = loadState();
+function loadState(){try{const x=JSON.parse(localStorage.getItem('yenGameSave'));if(x&&typeof x.cash==='number')return {...initialState(),...x, businesses:{...initialState().businesses,...x.businesses},stocks:{...initialState().stocks,...x.stocks}}}catch(e){}return initialState()}
+function currentJob(){return JOBS.find(j=>j.id===state.job)||JOBS[0]}
+function salaryPerDay(){return currentJob().salary*Math.pow(1.65,state.rank-1)*(state.job==='big'?1.12:1)}
+function clickIncome(){const rewards=[1,2,4,10,30,100,350,1200];return Math.floor((rewards[state.clickLevel-1]||1200)*currentJob().click*(1+state.prestige*.1)*(state.job==='youtuber'?1+Math.min(.5,state.clicks/10000):1))}
+function businessIncome(){return BUSINESSES.reduce((n,b)=>n+(state.businesses[b.id]||0)*b.profit,0)}\nfunction dailyIncome(){return salaryPerDay()+businessIncome()}
+function stockAssets(){return STOCKS.reduce((n,s)=>n+state.stocks[s.id].shares*state.stocks[s.id].price,0)}
+function totalAssets(){return state.cash+stockAssets()+BUSINESSES.reduce((n,b)=>n+(state.businesses[b.id]||0)*b.cost,0)}
+function addLog(message){state.log.unshift(message);state.log=state.log.slice(0,12)}
+function spend(amount){if(state.cash+1e-9<amount)return false;state.cash-=amount;return true}
+function save(silent=false){state.lastSaved=Date.now();localStorage.setItem('yenGameSave',JSON.stringify(state));if(!silent)addLog('セーブしました。');render()}
+function renderStats(){
+ document.getElementById('cash').textContent=fmt(state.cash);
+ document.getElementById('income').textContent=fmt(dailyIncome());
+ document.getElementById('assets').textContent=fmt(totalAssets());
+ document.getElementById('day').textContent=state.day.toLocaleString('ja-JP')+'日目';
+ document.getElementById('clickValue').textContent='1クリック：'+fmt(clickIncome());
+ document.getElementById('profile').innerHTML=`<div class="item"><div><h3>${currentJob().emoji} ${currentJob().name}</h3><p>${currentJob().desc}</p></div><div class="right"><div class="price">ランク ${state.rank}</div><p>日給 ${fmt(salaryPerDay())}</p></div></div><p class="muted">クリック回数：${state.clicks.toLocaleString('ja-JP')}回 ／ 転生回数：${state.prestige}回</p>`;
+}
+function renderUpgrades(){
+ const levels=[
+  {level:1,cost:0,reward:1},
+  {level:2,cost:100,reward:2},
+  {level:3,cost:250,reward:4},
+  {level:4,cost:1000,reward:10},
+  {level:5,cost:5000,reward:30},
+  {level:6,cost:25000,reward:100},
+  {level:7,cost:100000,reward:350},
+  {level:8,cost:500000,reward:1200}
+ ];
+ document.getElementById('upgradeList').innerHTML=levels.filter(x=>x.level>state.clickLevel).slice(0,3).map(x=>`<div class="item"><div><h3>クリック強化 Lv.${x.level}</h3><p>基本クリック報酬を ${fmt(x.reward)} にする</p></div><div class="right"><div class="price">${fmt(x.cost)}</div><button class="btn primary" ${state.cash<x.cost?'disabled':''} onclick="buyUpgrade(${x.level},${x.cost},${x.reward})">購入</button></div></div>`).join('')||'<p class="muted">すべての試作版強化を購入しました！</p>';
+}
+function buyUpgrade(level,cost,reward){if(level!==state.clickLevel+1||!spend(cost))return;state.clickLevel=level;addLog(`クリック強化 Lv.${level} を購入！`);render()}
+function renderJobs(){
+ document.getElementById('jobList').innerHTML=JOBS.map(j=>`<div class="item"><div><h3>${j.emoji} ${j.name} ${state.job===j.id?'（現在）':''}</h3><p>${j.desc}</p><p>基本日給：${fmt(j.salary)} ／ クリック倍率：×${j.click}</p></div><div class="right"><button class="btn ${state.job===j.id?'':'primary'}" ${state.job===j.id?'disabled':''} onclick="changeJob('${j.id}')">${state.job===j.id?'選択中':'転職する'}</button></div></div>`).join('');
+ const cost=Math.floor(500*Math.pow(2.15,state.rank-1));
+ document.getElementById('promotion').innerHTML=`<div class="item"><div><h3>ランク ${state.rank} → ${state.rank+1}</h3><p>日給が約1.65倍になります。</p></div><div class="right"><div class="price">${fmt(cost)}</div><button class="btn primary" ${state.cash<cost?'disabled':''} onclick="promote(${cost})">昇進する</button></div></div>`;
+}
+function changeJob(id){if(state.job===id)return;state.job=id;state.rank=1;addLog(`${currentJob().name}に転職しました。`);render()}
+function promote(cost){if(!spend(cost))return;state.rank++;addLog(`昇進！ランク${state.rank}になりました。`);render()}
+function renderBusinesses(){
+ document.getElementById('businessList').innerHTML=BUSINESSES.map(b=>{let count=state.businesses[b.id]||0;let cost=Math.floor(b.cost*Math.pow(1.16,count)*(state.job==='small'?.9:1));return `<div class="item"><div><h3>${b.emoji} ${b.name} ×${count}</h3><p>${b.desc}</p><p>1店舗あたり ${fmt(b.profit)} / 日</p></div><div class="right"><div class="price">${fmt(cost)}</div><button class="btn primary" ${state.cash<cost?'disabled':''} onclick="buyBusiness('${b.id}',${cost})">購入</button></div></div>`}).join('');
+ document.getElementById('businessSummary').textContent=`事業の1日収益：${fmt(businessIncome())} / 日`;
+}
+function buyBusiness(id,cost){if(!spend(cost))return;state.businesses[id]=(state.businesses[id]||0)+1;addLog(`${BUSINESSES.find(b=>b.id===id).name}を購入しました！`);render()}
+function renderStocks(){
+ document.getElementById('stockList').innerHTML=STOCKS.map(s=>{let p=state.stocks[s.id],value=p.shares*p.price,change=p.change;return `<div class="item"><div><h3>📈 ${s.name} <span class="muted">${s.symbol}</span></h3><p>保有：${p.shares}株 ／ 評価額：${fmt(value)}</p><p>平均取得単価：${p.shares?fmt(p.avg):'—'} ／ 配当率：${(s.dividend*100).toFixed(1)}%</p><p style="color:${change>=0?'#16a34a':'#dc2626'}">前回変動：${fmtSigned(change)}</p></div><div class="right"><div class="price">${fmt(p.price)} / 株</div><button class="btn primary" onclick="buyStock('${s.id}')">1株買う</button> <button class="btn" ${p.shares<1?'disabled':''} onclick="sellStock('${s.id}')">1株売る</button></div></div>`}).join('');
+}
+function buyStock(id){let p=state.stocks[id];if(!spend(p.price))return; p.avg=(p.avg*p.shares+p.price)/(p.shares+1);p.shares++;addLog(`${STOCKS.find(s=>s.id===id).name}を1株購入。`);render()}
+function sellStock(id){let p=state.stocks[id];if(p.shares<1)return;p.shares--;state.cash+=p.price;if(!p.shares)p.avg=0;addLog(`${STOCKS.find(s=>s.id===id).name}を1株売却。`);render()}
+function renderPrestige(){
+ const need=100000000,ok=totalAssets()>=need;
+ document.getElementById('prestigeInfo').innerHTML=`<p>現在の総資産：<strong>${fmt(totalAssets())}</strong></p><p>転生条件：${fmt(need)} 以上</p><div class="progress"><span style="width:${Math.min(100,totalAssets()/need*100)}%"></span></div><p>次の転生後ボーナス：クリック収入・自動収入 ×${(1+(state.prestige+1)*.1).toFixed(1)}</p>`;
+ document.getElementById('prestigeBtn').disabled=!ok;
+}
+function prestige(){if(totalAssets()<100000000)return;if(!confirm('転生しますか？所持金・職業ランク・事業・株式がリセットされます。'))return;state.cash=0;state.day=1;state.job='freeter';state.rank=1;state.clickLevel=1;state.clicks=0;state.businesses={cafe:0,delivery:0,it:0};state.stocks=Object.fromEntries(STOCKS.map(s=>[s.id,{shares:0,avg:0,price:s.price,change:0}]));state.prestige++;addLog(`転生成功！永続ボーナスが${state.prestige*10}%になりました。`);render()}
+function renderLog(){document.getElementById('log').innerHTML=state.log.map(x=>`<li>${x}</li>`).join('')}
+function renderDayMeter(){
+ const progress=Math.max(0,Math.min(100,(acc/10)*100));
+ const remain=Math.max(0,10-acc);
+ const fill=document.getElementById('dayMeterFill');
+ if(fill)fill.style.width=progress+'%';
+ const d=document.getElementById('meterDay');if(d)d.textContent=state.day+'日目';
+ const r=document.getElementById('dayRemaining');if(r)r.textContent='次の日まで '+remain.toFixed(1)+'秒';
+}
+function render(){renderDayMeter();renderStats();renderUpgrades();renderJobs();renderBusinesses();renderStocks();renderPrestige();renderLog()}
+document.getElementById('clickBtn').addEventListener('click',()=>{state.cash+=clickIncome();state.clicks++;if(state.clicks%100===0)addLog(`クリック${state.clicks}回達成！`);renderStats();renderUpgrades();renderJobs();renderBusinesses();renderPrestige()});
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===btn.dataset.tab))}));
+document.getElementById('saveBtn').addEventListener('click',()=>save(false));
+document.getElementById('prestigeBtn').addEventListener('click',prestige);
+document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('セーブデータを消して最初から始めますか？')){localStorage.removeItem('yenGameSave');state=initialState();addLog('新しいゲームを開始しました。');render()}});
+let last=Date.now(),acc=0,stockAcc=0;
+setInterval(()=>{
+ const now=Date.now(),dt=Math.min(5,(now-last)/1000);last=now;
+ state.cash+=businessIncome()*dt;
+ acc+=dt;
+ while(acc>=10){acc-=10;state.day++;state.cash+=salaryPerDay()+businessIncome();addLog(`${state.day}日目になりました。給料と事業収益を受け取りました。`)}
+ if(state.day>state.lastDividendDay){const days=state.day-state.lastDividendDay;let div=0;for(const s of STOCKS){const p=state.stocks[s.id];div+=p.shares*p.price*s.dividend*days}if(div>0){state.cash+=div;addLog(`株式配当 ${fmt(div)} を受け取りました。`)}state.lastDividendDay=state.day}
+ stockAcc+=dt;if(stockAcc>=8){stockAcc=0;for(const s of STOCKS){const p=state.stocks[s.id],old=p.price;const factor=1+(Math.random()-.48)*.12;p.price=Math.max(10,Math.round(p.price*factor));p.change=p.price-old}}
+ if(now-(state.lastSaved||0)>30000)save(true);
+ renderStats();renderBusinesses();renderStocks();renderPrestige();
+},1000);
+render();
+</script>
+</body>
+</html>
