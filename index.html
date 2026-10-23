@@ -36,7 +36,7 @@ button.b.sell{background:var(--bad);color:#fff}
 input{font:inherit;font-size:16px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:150px}
 #coin{display:block;margin:6px auto;width:170px;height:170px;border-radius:50%;border:6px solid var(--acc);background:radial-gradient(circle at 35% 30%,#ffe9a6,#e8b04a);font-size:64px;cursor:pointer;box-shadow:0 5px 0 #a8730f;transition:transform .06s,box-shadow .06s}
 #coin:active{transform:translateY(4px);box-shadow:0 1px 0 #a8730f}
-.c{text-align:center}.up{color:var(--acc2)}.down{color:var(--bad)}
+#coin{-webkit-touch-callout:none}#coin.fv{border-color:#d9432b;animation:fvp .4s infinite alternate}@keyframes fvp{to{transform:scale(1.05)}}.c{text-align:center}.up{color:var(--acc2)}.down{color:var(--bad)}
 #log{font-size:13px;color:var(--sub);max-height:180px;overflow:auto;margin:0;padding:0;list-style:none}
 #log li{padding:2px 0}
 .lock{opacity:.5}
@@ -65,14 +65,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--acc2);outline-o
 <script>
 const JOBS=[
 {id:'neet',n:'無職（ニート）',e:'🛋️',d:'最初の職業。日給なし',w:0,m:1,c:0},
-{id:'conv',n:'コンビニ店員',e:'🏪',d:'10%の確率で副業収入が1.5倍',w:50,m:1.3,c:1000},
-{id:'fact',n:'工場作業員',e:'🏭',d:'事業収入 +10%',w:75,m:1.1,c:3000},
-{id:'corp',n:'会社員',e:'💼',d:'事業購入価格 10%割引',w:100,m:1.1,c:10000},
-{id:'gov',n:'公務員',e:'🏛️',d:'安定型。堅実に稼ぐ',w:150,m:0.9,c:20000},
-{id:'prog',n:'プログラマー',e:'👨‍💻',d:'自動クリック1回/秒。ランクごとに回数1.8倍',w:100,m:1.0,c:50000},
-{id:'ent',n:'起業家',e:'🚀',d:'日給0。事業収入 +200%、ランクごとに +50%',w:0,m:1.0,c:100000},
-{id:'gamb',n:'ギャンブラー',e:'🎰',d:'副業時1%で100倍。ランクごとに1.2倍',w:0,m:1.0,c:100000},
-{id:'yt',n:'YouTuber',e:'📹',d:'YouTuberシステム解放（登録者・イベント）',w:40,m:1.3,c:50000}];
+{id:'conv',n:'コンビニ店員',e:'🏪',d:'10%の確率で副業収入が1.5倍',w:25,m:1.3,c:500},
+{id:'fact',n:'工場作業員',e:'🏭',d:'事業収入 +10%',w:25,m:1.1,c:500},
+{id:'corp',n:'会社員',e:'💼',d:'事業購入価格 10%割引',w:50,m:1.1,c:10000},
+{id:'gov',n:'公務員',e:'🏛️',d:'安定型。堅実に稼ぐ',w:100,m:0.9,c:100000},
+{id:'prog',n:'プログラマー',e:'👨‍💻',d:'自動クリック1回/秒。ランクごとに回数1.8倍',w:0,m:1.0,c:100000},
+{id:'ent',n:'起業家',e:'🚀',d:'日給0。事業収入 +500%、ランクごとに +50%',w:0,m:1.0,c:1000000},
+{id:'gamb',n:'ギャンブラー',e:'🎰',d:'副業時1%で100倍。ランクごとに1.2倍',w:0,m:1.0,c:10000},
+{id:'yt',n:'YouTuber',e:'📹',d:'YouTuberシステム解放（登録者・イベント）',w:40,m:1.3,c:1000}];
 const BIZ=[
 {id:'cafe',n:'カフェ',e:'☕',p:1000,r:20},
 {id:'deli',n:'配送会社',e:'🚚',p:10000,r:250},
@@ -99,9 +99,9 @@ const gen=(arr,nf,df,okf)=>arr.forEach(v=>{const r={mult:.02};if(K%10===3)r.stoc
 add('はじめての収入','はじめて収入をもらう',()=>S.fl.earned,{mult:.05});
 add('そろそろバイトしようか','副業クリック回数100回達成',()=>S.tc>=100,{job:'conv'});
 add('ライン作業好きかも？','20日経過する',()=>S.day>=20,{job:'fact'});
-add('そろそろ定職に就きたい','副業クリック回数500回達成',()=>S.tc>=500,{job:'corp'});
+add('そろそろ定職に就きたい','副業クリック回数1000回達成',()=>S.tc>=1000,{job:'corp'});
 add('安定した人生','総資産1万円達成',()=>assets()>=1e4,{job:'gov',biz:1});
-add('自動化大好き','副業クリック回数1000回達成',()=>S.tc>=1000,{job:'prog'});
+add('自動化大好き','副業クリック回数10000回達成',()=>S.tc>=10000,{job:'prog'});
 add('はじめての起業','総資産10万円達成',()=>assets()>=1e5,{job:'ent',biz:1});
 add('カイジ','カジノを100回プレイする',()=>S.st.casino>=100,{job:'gamb'});
 add('動画投稿はじめました。','100日経過する',()=>S.day>=100,{job:'yt'});
@@ -170,7 +170,7 @@ const upCost=()=>Math.floor(50*Math.pow(1.5,S.lv));
 const bizCount=id=>S.biz[id]||0;
 const bizTotal=()=>BIZ.reduce((a,b)=>a+bizCount(b.id),0);
 const bizPrice=b=>Math.floor(b.p*Math.pow(1.15,bizCount(b.id))*(S.job==='corp'?0.9:1));
-const bizMul=()=>S.job==='fact'?1.1:S.job==='ent'?3+0.5*(rank()-1):1;
+const bizMul=()=>S.job==='fact'?1.1:S.job==='ent'?6+0.5*(rank()-1):1;
 const bizInc=()=>BIZ.reduce((a,b)=>a+b.r*bizCount(b.id),0)*bizMul()*pm();
 const held=id=>S.stk[id]||{n:0,avg:0};
 const shares=()=>STK.reduce((a,s)=>a+held(s.id).n,0);
@@ -215,18 +215,17 @@ function checkAch(){
 }
 let tk=0;
 function tick(){
- S.t+=0.1;tk++;
+ S.t+=0.1;tk++;feverTick();
  if(tk%10===0&&autoN()>0){S.money+=clickPow()*autoN()}
  if(S.t>=DAY)dayEnd();
  updateTop();meter();if(tk%5===0)checkAch();
 }
 
-function coinClick(e){
+function coinClick(e,fv){
  let g=clickPow();
  if(S.job==='conv'&&Math.random()<.1)g*=1.5;
  if(S.job==='gamb'&&Math.random()<.01){g*=100*Math.pow(1.2,rank()-1);toast('🎰 大当たり！ '+fmt(g))}
- S.money+=g;S.clicks++;S.tc++;S.fl.earned=1;if(isYT())S.subs++;
- if(S.clicks%100===0)log('👆 副業 '+S.clicks+' 回達成');
+ S.money+=g;S.fl.earned=1;if(!fv){S.clicks++;S.tc++;if(isYT())S.subs++;if(S.clicks%100===0)log('👆 副業 '+S.clicks+' 回達成')}
  const p=document.createElement('div');p.className='pop';p.textContent='+'+(g<10?g.toFixed(1):N(Math.floor(g)));
  p.style.left=(e.clientX||innerWidth/2)-10+'px';p.style.top=(e.clientY||300)-30+'px';
  document.body.appendChild(p);setTimeout(()=>p.remove(),700);
@@ -235,6 +234,11 @@ function coinClick(e){
 }
 const clickInfo=()=>'1回 '+clickPow().toFixed(1)+'円（強化 ×'+Math.pow(1.25,S.lv).toFixed(2)+'／職業 ×'+clickMult().toFixed(2)+(S.pres?'／転生 ×'+(1+.1*S.pres).toFixed(1):'')+'）　副業 '+S.clicks+' 回';
 
+let fever=0,hold=null,lastBet=100,gmsg='',hlCard=1+(Math.random()*13|0);
+const fvTxt=()=>fever>0?`🔥 フィーバー！長押しで1秒10回（残り${Math.ceil(fever)}秒）`:'';
+function feverTick(){if(fever>0){fever=Math.max(0,fever-.1);if(fever<=0){fever=0;coinUp();toast('🔥 フィーバータイム終了')}}else if(Math.random()<1/1800){fever=10;toast('🔥 フィーバータイム！副業ボタンを長押し（10秒）');log('🔥 フィーバータイム発生')}const c=$('coin');if(c)c.classList.toggle('fv',fever>0);const f=$('fvTxt');if(f)f.textContent=fvTxt()}
+function coinDown(e){if(fever>0){coinClick(e,true);clearInterval(hold);hold=setInterval(()=>{if(fever>0)coinClick({},true);else coinUp()},100)}else coinClick(e)}
+function coinUp(){clearInterval(hold);hold=null}
 function buyUp(){const c=upCost();if(S.money<c)return;S.money-=c;S.lv++;log('⚡ 副業強化 Lv.'+S.lv+' を購入');save(1);render()}
 function promote(){const c=promoCost();if(S.money<c||job().w===0&&S.job==='neet')return;S.money-=c;S.rk[S.job]=rank()+1;log('🎖️ '+job().n+' ランク '+rank()+' に昇進');save(1);render()}
 function change(id){
@@ -281,6 +285,20 @@ function flip(g){
  else{if(c.bet>=1e4)S.fl.lost=1;coinMsg='「'+r+'」ハズレ… 0円になりました';c.on=0;c.pot=0;S.st.streak=0}
  render();
 }
+const RED=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],face=n=>({1:'A',11:'J',12:'Q',13:'K'}[n]||n);
+function gbet(){const b=Math.floor(Number(lastBet));if(!(b>=1)||b>S.money){gmsg='掛け金が正しくありません（1円以上、所持金以下）';render();return 0}S.money-=b;return b}
+function settle(b,pay,m){S.money+=pay;S.st.casino++;if(pay>=1e5)S.fl.big=1;gmsg=m+(pay>b?'　当たり！ +'+fmt(pay-b):pay===b?'　引き分け':pay?'　一部戻り':'　ハズレ');render()}
+function roul(k){const b=gbet();if(!b)return;const r=Math.random()*37|0,col=r===0?'緑':RED.includes(r)?'赤':'黒';const w=(k==='r'&&col==='赤')||(k==='b'&&col==='黒')||(k==='e'&&r>0&&r%2===0)||(k==='o'&&r%2===1);settle(b,w?b*2:(k==='z'&&r===0?b*36:0),'🎡 '+r+'（'+col+'）')}
+function chohan(k){const b=gbet();if(!b)return;const d=[1+Math.random()*6|0,1+Math.random()*6|0],s=d[0]+d[1],ev=s%2===0;settle(b,(k==='e')===ev?Math.floor(b*1.95):0,'🎲 '+d[0]+'＋'+d[1]+'＝'+s+'（'+(ev?'丁':'半')+'）')}
+function hilo(k){const c=hlCard,p=k==='h'?(13-c)/13:(c-1)/13;if(p<=0){gmsg='その方向には進めません';return render()}const b=gbet();if(!b)return;const n=1+(Math.random()*13|0),w=k==='h'?n>c:n<c;hlCard=n;settle(b,w?Math.floor(b*.95/p):0,'🃏 '+face(c)+' → '+face(n))}
+function lottery(){const b=300;if(S.money<b){gmsg='所持金が足りません';return render()}S.money-=b;const r=Math.random();let pay=0,m='ハズレ';if(r<.00005){pay=1e6;m='1等 100万円！'}else if(r<.00205){pay=1e4;m='2等 1万円'}else if(r<.02205){pay=1000;m='3等 1,000円'}else if(r<.12205){pay=300;m='4等 300円'}settle(b,pay,'🎟️ '+m)}
+function otherCard(){const c=hlCard,ph=(13-c)/13,pl=(c-1)/13,m=p=>p>0?'×'+(.95/p).toFixed(2):'不可';
+return `<div class="card"><h3>🎲 その他のカジノ</h3><div class="bt" style="align-items:center;margin-bottom:8px"><input type="number" inputmode="numeric" min="1" value="${lastBet}" oninput="lastBet=this.value" placeholder="掛け金（円）"><small style="color:var(--sub)">共通の掛け金</small></div>
+<div class="row"><div class="t">🎡 ルーレット<small>赤・黒・偶数・奇数は×2、0に的中で×36</small></div><div class="bt"><button class="b" onclick="roul('r')">赤</button><button class="b" onclick="roul('b')">黒</button><button class="b" onclick="roul('e')">偶数</button><button class="b" onclick="roul('o')">奇数</button><button class="b" onclick="roul('z')">0</button></div></div>
+<div class="row"><div class="t">🎲 丁半<small>サイコロ2個の合計。当たりで×1.95</small></div><div class="bt"><button class="b" onclick="chohan('e')">丁（偶数）</button><button class="b" onclick="chohan('o')">半（奇数）</button></div></div>
+<div class="row"><div class="t">🃏 ハイ＆ロー<small>今のカード：<b>${face(c)}</b>（1〜13）。同じ数字は負け。上 ${m(ph)}／下 ${m(pl)}</small></div><div class="bt"><button class="b" onclick="hilo('h')">上</button><button class="b" onclick="hilo('l')">下</button></div></div>
+<div class="row"><div class="t">🎟️ 宝くじ<small>1枚300円。1等100万円（約0.005%）〜4等300円</small></div><button class="b" onclick="lottery()" ${S.money<300?'disabled':''}>買う</button></div>
+<div style="font-size:14px;margin-top:8px">${gmsg}</div></div>`}
 function cash(){const c=S.coin;S.money+=c.pot;coinMsg=fmt(c.pot)+'を受け取りました';c.on=0;c.pot=0;S.st.streak=0;render()}
 
 function renderNav(){
@@ -295,7 +313,7 @@ function render(){
  if(tab==='home'){
   const uc=upCost(),j=job();
   h='<div class="card"><div class="bar"><i id="meter"></i></div><div class="c" style="font-size:13px;color:var(--sub);margin-top:4px" id="remain"></div></div>'+
-  '<div class="card c"><button id="coin" onclick="coinClick(event)" aria-label="副業で稼ぐ">🪙</button><div style="font-size:13px;color:var(--sub)">タップして副業</div><div style="font-size:13px;color:var(--sub)" id="clickInfo">'+clickInfo()+'</div></div>'+
+  '<div class="card c"><div id="fvTxt" style="font-weight:700;color:var(--bad);min-height:1.5em">'+fvTxt()+'</div><button id="coin" class="'+(fever>0?'fv':'')+'" onpointerdown="coinDown(event)" oncontextmenu="return false" aria-label="副業で稼ぐ">🪙</button><div style="font-size:13px;color:var(--sub)">タップして副業（フィーバー中は長押し）</div><div style="font-size:13px;color:var(--sub)" id="clickInfo">'+clickInfo()+'</div></div>'+
   (isYT()?'<div class="card"><h3>📹 YouTuber</h3><div style="font-size:14px">登録者 <b id="ytSubs">'+N(Math.floor(S.subs))+'</b> 人／全収入 +'+Math.round(ytB()*100)+'%／広告収入 ×'+adMul().toFixed(2)+'<br><small style="color:var(--sub)">副業1回で登録者+1。1日の終わりにランダムイベントが起きます。</small></div></div>':'')+
   '<div class="card"><h3>'+j.e+' '+j.n+'</h3><div style="font-size:14px">ランク '+rank()+'／基本日給 '+fmt(wage())+(autoN()?'／自動クリック '+autoN().toFixed(1)+'回/秒':'')+'</div></div>'+
   '<div class="card"><h3>⚡ 副業強化</h3><div class="row"><div class="t">次：Lv.'+(S.lv+1)+'<small>強化倍率 ×'+Math.pow(1.25,S.lv).toFixed(2)+' → ×'+Math.pow(1.25,S.lv+1).toFixed(2)+'</small></div><button class="b" onclick="buyUp()" '+(S.money<uc?'disabled':'')+'>'+fmt(uc)+'</button></div></div>'+
@@ -329,7 +347,7 @@ function render(){
   '<div class="card"><h3>🪙 コイン投げ</h3><div style="font-size:13px;color:var(--sub);margin-bottom:6px">表か裏を当てれば2倍。続けるか、やめて受け取るか選べます。外れると0円。</div>'+
   (c.on?'<div style="font-size:15px;margin-bottom:8px">現在の賞金：<b>'+fmt(c.pot)+'</b>（連勝 '+S.st.streak+'）</div><div class="bt"><button class="b" onclick="flip(\'表\')">続ける：表</button><button class="b" onclick="flip(\'裏\')">続ける：裏</button><button class="b alt" onclick="cash()">やめて受け取る</button></div>':
   '<div class="bt" style="align-items:center"><input id="bet" type="number" inputmode="numeric" min="1" placeholder="掛け金（円）" value="100"><button class="b" onclick="flip(\'表\')">表</button><button class="b" onclick="flip(\'裏\')">裏</button></div>')+
-  '<div style="font-size:14px;margin-top:8px">'+coinMsg+'</div></div>';
+  '<div style="font-size:14px;margin-top:8px">'+coinMsg+'</div></div>'+otherCard();
  }else if(tab==='pres'){
   const a=assets(),r=Math.min(1,a/GOAL);
   h='<div class="card"><h3>✨ 転生</h3><div style="font-size:14px">現在の総資産：'+fmt(a)+'<br>必要な総資産：'+fmt(GOAL)+'</div><div class="bar" style="margin:10px 0"><i style="width:'+(r*100)+'%"></i></div><div style="font-size:13px;color:var(--sub)">達成率 '+(r*100).toFixed(2)+'%</div></div>'+
@@ -341,7 +359,7 @@ function render(){
  p.innerHTML=h;if(tab==='home'){renderLog();meter()}
 }
 
-document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('pointerup',coinUp);document.addEventListener('pointercancel',coinUp);
 document.addEventListener('dblclick',e=>e.preventDefault());
 if(!load())S=fresh();
 if(!S.log.length)log('🌱 ゲームを開始しました');
