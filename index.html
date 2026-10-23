@@ -19,7 +19,7 @@ main{max-width:720px;margin:0 auto;padding:12px}
 .st small{color:var(--sub);font-size:12px}.st b{display:block;font-size:18px;font-variant-numeric:tabular-nums}
 .st.big b{font-size:22px;color:var(--acc)}
 nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px}
-nav button{flex:1;white-space:nowrap;padding:9px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;font:inherit;font-size:14px;cursor:pointer}
+nav button{flex:none;white-space:nowrap;padding:9px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;font:inherit;font-size:14px;cursor:pointer}
 nav button.on{background:var(--btn);color:var(--btnt);border-color:var(--btn)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
 .card h3{margin:0 0 8px;font-size:16px}
@@ -33,19 +33,25 @@ button.b{padding:8px 12px;border:0;border-radius:10px;background:var(--btn);colo
 button.b:disabled{opacity:.35;cursor:not-allowed}
 button.b.alt{background:var(--bar);color:var(--ink)}
 button.b.sell{background:var(--bad);color:#fff}
+input{font:inherit;font-size:16px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:150px}
 #coin{display:block;margin:6px auto;width:170px;height:170px;border-radius:50%;border:6px solid var(--acc);background:radial-gradient(circle at 35% 30%,#ffe9a6,#e8b04a);font-size:64px;cursor:pointer;box-shadow:0 5px 0 #a8730f;transition:transform .06s,box-shadow .06s}
 #coin:active{transform:translateY(4px);box-shadow:0 1px 0 #a8730f}
 .c{text-align:center}.up{color:var(--acc2)}.down{color:var(--bad)}
 #log{font-size:13px;color:var(--sub);max-height:180px;overflow:auto;margin:0;padding:0;list-style:none}
 #log li{padding:2px 0}
 .lock{opacity:.5}
+.reels{font-size:44px;text-align:center;letter-spacing:8px;margin:6px 0}
+#toasts{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 8px);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;z-index:50}
+.toast{background:var(--btn);color:var(--btnt);padding:10px 16px;border-radius:12px;font-size:14px;max-width:92%;box-shadow:0 4px 14px rgba(0,0,0,.25);animation:ti .25s}
+@keyframes ti{from{transform:translateY(-16px);opacity:0}}
 .pop{position:fixed;pointer-events:none;font-weight:700;color:var(--acc);animation:fl .7s forwards}
 @keyframes fl{to{transform:translateY(-40px);opacity:0}}
-@media (prefers-reduced-motion:reduce){.pop{animation:none;opacity:0}}
-button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.pop,.toast{animation:none}}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 </style>
 </head>
 <body>
+<div id="toasts"></div>
 <main>
 <div class="top">
 <div class="st big"><small>💰 所持金</small><b id="tMoney"></b></div>
@@ -58,20 +64,22 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 </main>
 <script>
 const JOBS=[
-{id:'free',n:'フリーター',e:'🛵',d:'副業収入重視。最初の職業',w:25,m:1.5},
-{id:'big',n:'会社員（大企業）',e:'🏢',d:'給料と昇進で大きく成長',w:125,m:1.0},
-{id:'sme',n:'会社員（中小企業）',e:'🏭',d:'バランス型。事業購入が10%引き',w:100,m:1.1},
-{id:'gov',n:'公務員',e:'🏛️',d:'安定型。堅実に稼ぐ',w:150,m:0.9},
-{id:'yt',n:'YouTuber',e:'📹',d:'副業するほど倍率上昇（上限あり）',w:45,m:1.25},
-{id:'doc',n:'医者',e:'🩺',d:'高給だが副業は苦手',w:300,m:0.8,x:1},
-{id:'farm',n:'農家',e:'🌾',d:'のんびり働く',w:80,m:1.2,x:1},
-{id:'nin',n:'忍者',e:'🥷',d:'副業の達人',w:60,m:1.8,x:1},
-{id:'idol',n:'アイドル',e:'🎤',d:'人気者は副業も強い',w:90,m:1.6,x:1},
-{id:'prog',n:'プログラマー',e:'👨‍💻',d:'堅実に高収入',w:200,m:1.0,x:1}];
+{id:'neet',n:'無職（ニート）',e:'🛋️',d:'最初の職業。日給なし',w:0,m:1,c:0},
+{id:'conv',n:'コンビニ店員',e:'🏪',d:'10%の確率で副業収入が1.5倍',w:50,m:1.3,c:1000},
+{id:'fact',n:'工場作業員',e:'🏭',d:'事業収入 +10%',w:75,m:1.1,c:3000},
+{id:'corp',n:'会社員',e:'💼',d:'事業購入価格 10%割引',w:100,m:1.1,c:10000},
+{id:'gov',n:'公務員',e:'🏛️',d:'安定型。堅実に稼ぐ',w:150,m:0.9,c:20000},
+{id:'prog',n:'プログラマー',e:'👨‍💻',d:'自動クリック1回/秒。ランクごとに回数1.8倍',w:100,m:1.0,c:50000},
+{id:'ent',n:'起業家',e:'🚀',d:'日給0。事業収入 +200%、ランクごとに +50%',w:0,m:1.0,c:100000},
+{id:'gamb',n:'ギャンブラー',e:'🎰',d:'副業時1%で100倍。ランクごとに1.2倍',w:0,m:1.0,c:100000},
+{id:'yt',n:'YouTuber',e:'📹',d:'YouTuberシステム解放（登録者・イベント）',w:40,m:1.3,c:50000}];
 const BIZ=[
-{id:'cafe',n:'カフェ',e:'☕',p:10000,r:20},
-{id:'deli',n:'配送会社',e:'🚚',p:100000,r:250},
-{id:'it',n:'IT企業',e:'💻',p:1000000,r:3000}];
+{id:'cafe',n:'カフェ',e:'☕',p:1000,r:20},
+{id:'deli',n:'配送会社',e:'🚚',p:10000,r:250},
+{id:'it',n:'IT企業',e:'💻',p:100000,r:3000},
+{id:'est',n:'不動産',e:'🏘️',p:1e6,r:40000},
+{id:'bank',n:'銀行',e:'🏦',p:1e7,r:500000},
+{id:'spc',n:'宇宙開発',e:'🛰️',p:1e8,r:6e6}];
 const STK=[
 {id:'mac',n:'マクドナルド',e:'🍔',b:320,dv:.004},{id:'toto',n:'TOTO',e:'🚽',b:540,dv:.003},
 {id:'tak',n:'タカギ',e:'💧',b:210,dv:.006},{id:'fuj',n:'フジコー',e:'🏗️',b:880,dv:.005},
@@ -80,49 +88,98 @@ const STK=[
 {id:'uni',n:'ユニクロ',e:'👕',b:700,dv:.003,x:1},{id:'yak',n:'ヤクルト',e:'🥛',b:400,dv:.004,x:1},
 {id:'kik',n:'キッコーマン',e:'🍶',b:650,dv:.003,x:1},{id:'sun',n:'サントリー',e:'🥃',b:900,dv:.0035,x:1},
 {id:'sus',n:'スシロー',e:'🍣',b:280,dv:.005,x:1},{id:'dai',n:'ダイキン',e:'❄️',b:1700,dv:.002,x:1}];
-const ACH=[
-{id:'first',n:'はじめての収入',d:'はじめて収入をもらう',ok:()=>S.fl.earned,r:{mult:.05}},
-{id:'c100',n:'副業見習い',d:'副業を100回行う',ok:()=>S.tc>=100,r:{job:1}},
-{id:'c1k',n:'副業職人',d:'副業を1,000回行う',ok:()=>S.tc>=1000,r:{mult:.1}},
-{id:'master',n:'副業マスター',d:'副業のクリック回数が1万回を超える',ok:()=>S.tc>10000,r:{mult:.5,stock:1}},
-{id:'job1',n:'はじめての転職',d:'はじめて転職する',ok:()=>S.fl.changed,r:{stock:1}},
-{id:'rank5',n:'出世街道',d:'職業ランク5に到達',ok:()=>S.rank>=5,r:{job:1}},
-{id:'lv20',n:'強化の道',d:'副業強化Lv.20に到達',ok:()=>S.lv>=20,r:{mult:.1}},
-{id:'biz1',n:'経営者',d:'事業を購入する',ok:()=>S.fl.biz,r:{stock:1}},
-{id:'stk1',n:'投資家デビュー',d:'株式を購入する',ok:()=>S.fl.stk,r:{mult:.05}},
-{id:'m1m',n:'百万長者',d:'総資産100万円に到達',ok:()=>assets()>=1e6,r:{job:1}},
-{id:'m10m',n:'一千万の壁',d:'総資産1,000万円に到達',ok:()=>assets()>=1e7,r:{stock:1,mult:.1}},
-{id:'d100',n:'継続は力なり',d:'100日経過する',ok:()=>S.day>=100,r:{stock:1}},
-{id:'pres',n:'生まれ変わり',d:'はじめて転生する',ok:()=>S.pres>=1,r:{job:1,mult:.2}},
-{id:'fast',n:'すぐ転生するやん',d:'10日以内に転生する',ok:()=>S.fl.fast,r:{job:1,stock:1,mult:.5}}];
-const GOAL=1e8,DAY=10,KEY='yen-game-v2',YT_CAP=1.5,PERS=['pres','prices','ach','uj','us','fl','tc','am'];
-let S=null,tab='home';
-function fresh(o){const n={money:0,day:1,t:0,job:'free',rank:1,lv:0,clicks:0,biz:{},stk:{},log:[],pres:0,prices:{},ach:{},uj:[],us:[],fl:{},tc:0,am:0};
+const GOAL=1e8,DAY=10,KEY='yen-game-v3',YT=[[1e6,3],[1e5,1],[1e4,.5],[1e3,.15],[100,.05]];
+const PERS=['pres','prices','ach','uj','us','own','nb','fl','tc','am','st'];
+const N=n=>n.toLocaleString('ja-JP');
+const fmt=n=>N(Math.floor(n))+'円';
+const maxRank=()=>Math.max(1,...Object.values(S.rk));
+const A=[];let K=0;
+const add=(n,d,ok,r)=>A.push({n,d,ok,r:r||{mult:.02}});
+const gen=(arr,nf,df,okf)=>arr.forEach(v=>{const r={mult:.02};if(K%10===3)r.stock=1;K++;add(nf(v),df(v),()=>okf(v),r)});
+add('はじめての収入','はじめて収入をもらう',()=>S.fl.earned,{mult:.05});
+add('そろそろバイトしようか','副業クリック回数100回達成',()=>S.tc>=100,{job:'conv'});
+add('ライン作業好きかも？','20日経過する',()=>S.day>=20,{job:'fact'});
+add('そろそろ定職に就きたい','副業クリック回数500回達成',()=>S.tc>=500,{job:'corp'});
+add('安定した人生','総資産1万円達成',()=>assets()>=1e4,{job:'gov',biz:1});
+add('自動化大好き','副業クリック回数1000回達成',()=>S.tc>=1000,{job:'prog'});
+add('はじめての起業','総資産10万円達成',()=>assets()>=1e5,{job:'ent',biz:1});
+add('カイジ','カジノを100回プレイする',()=>S.st.casino>=100,{job:'gamb'});
+add('動画投稿はじめました。','100日経過する',()=>S.day>=100,{job:'yt'});
+add('副業マスター','副業のクリック回数が1万回を超える',()=>S.tc>10000,{mult:.2});
+add('すぐ転生するやん','10日以内に転生する',()=>S.fl.fast,{mult:.3});
+add('初投稿','登録者数10人達成',()=>S.subs>=10);
+add('登録者100人ありがとう','登録者数100人達成',()=>S.subs>=100);
+add('収益化達成','登録者数1,000人達成',()=>S.subs>=1e3);
+add('銀の盾','登録者数100,000人達成',()=>S.subs>=1e5,{mult:.1});
+add('金の盾','登録者数1,000,000人達成',()=>S.subs>=1e6,{mult:.2});
+add('急上昇1位','急上昇ランキング入りを達成',()=>S.fl.trend);
+add('炎上商法','炎上イベントを経験',()=>S.fl.flame);
+add('伝説の配信者','登録者数10,000,000人達成',()=>S.subs>=1e7,{mult:.3});
+add('セーブ大事','手動セーブをする',()=>S.fl.saved);
+gen([10,50,250,2500,5000,25000,50000,100000],v=>'副業の道 '+N(v)+'回',v=>'副業を合計'+N(v)+'回行う',v=>S.tc>=v);
+gen([5,10,50,200,365,500,1000],v=>N(v)+'日目の景色',v=>N(v)+'日経過する',v=>S.day>=v);
+gen([1e3,3e3,3e4,3e5,1e6,1e7,1e8,1e9,1e10],v=>'資産'+N(v)+'円',v=>'総資産'+N(v)+'円達成',v=>assets()>=v);
+gen([1,5,10,20,30,40,50],v=>'強化Lv.'+v,v=>'副業強化Lv.'+v+'に到達',v=>S.lv>=v);
+gen([2,3,5,8,10,15,20],v=>'ランク'+v+'到達',v=>'職業ランク'+v+'に到達',v=>maxRank()>=v);
+gen([1,5,10,25,50,100],v=>'事業家 '+v+'件',v=>'事業を合計'+v+'件所有する',v=>bizTotal()>=v);
+gen([1,10,100,1000],v=>'株主 '+N(v)+'株',v=>'株式を合計'+N(v)+'株保有する',v=>shares()>=v);
+gen([3,6,10],v=>'分散投資 '+v+'銘柄',v=>v+'銘柄の株式を同時に保有する',v=>kinds()>=v);
+gen([1,10,50,500],v=>'カジノデビュー '+v,v=>'カジノを'+N(v)+'回プレイする',v=>S.st.casino>=v);
+add('スロット大当たり','スロットで7️⃣が3つ揃う',()=>S.fl.jack,{mult:.05});
+add('大勝ち','カジノで1回に10万円以上獲得',()=>S.fl.big,{mult:.05});
+add('すってんてん','コインで1万円以上を失う',()=>S.fl.lost,{mult:.02});
+gen([1,3,5,10],v=>'コイン'+v+'連勝',v=>'コイン投げで'+v+'回連続で当てる',v=>S.st.maxs>=v);
+gen([1,3,5,10],v=>'転生'+v+'回',v=>v+'回転生する',v=>S.pres>=v);
+gen([2,5,9],v=>'転職の達人 '+v,v=>v+'種類の職業を経験する',v=>S.own.length+1>=v);
+gen([1e4,1e5,1e6,1e7],v=>'お小遣い '+N(v),v=>'所持金'+N(v)+'円達成',v=>S.money>=v);
+gen([100,1e4,1e6],v=>'配当生活 '+N(v),v=>'配当を合計'+N(v)+'円受け取る',v=>S.st.div>=v);
+gen([10,25,50,75],v=>'実績コレクター '+v,v=>'実績を'+v+'個達成する',v=>achCount()>=v);
+const EV=[
+{n:'バズった！',p:.01,fx:()=>{S.subs*=1.1;ad(.5,1);return '登録者+10%・広告収入+50%（1日）'}},
+{n:'急上昇ランキング入り！',p:.005,fx:()=>{S.subs*=1.25;ad(1,1);S.fl.trend=1;return '登録者+25%・広告収入+100%（1日）'}},
+{n:'案件獲得！',p:.02,c:()=>S.subs>=1e4,fx:()=>{const g=500+Math.floor(Math.random()*4500);S.money+=g;return fmt(g)+'を獲得'}},
+{n:'企業案件！',p:.01,c:()=>S.subs>=1e5,fx:()=>{const g=5000+Math.floor(Math.random()*45000);S.money+=g;return fmt(g)+'を獲得'}},
+{n:'神対応！',p:.003,fx:()=>{S.subs*=1.2;return '登録者+20%'}},
+{n:'動画が伸びない…',p:.03,fx:()=>{ad(-.2,1);return '広告収入-20%（1日）'}},
+{n:'炎上…',p:.005,fx:()=>{S.subs*=.9;S.fl.flame=1;return '登録者-10%'}},
+{n:'大炎上…',p:.001,fx:()=>{S.subs*=.7;ad(-.5,3);S.fl.flame=1;return '登録者-30%・広告収入-50%（3日間）'}},
+{n:'切り抜きがバズる！',p:.005,fx:()=>{S.subs*=1.5;return '登録者+50%'}}];
+let S=null,tab='home',slotMsg={},coinMsg='';
+function fresh(o){
+ const n={money:0,day:1,t:0,job:'neet',rk:{},lv:0,clicks:0,biz:{},stk:{},log:[],pres:0,prices:{},ach:{},uj:[],us:[],own:[],nb:1,fl:{},tc:0,am:0,subs:0,ads:[],coin:{on:0,pot:0,bet:0},st:{casino:0,maxs:0,div:0,streak:0}};
  if(o)PERS.forEach(k=>n[k]=o[k]);
  STK.forEach(s=>{if(!n.prices[s.id])n.prices[s.id]={p:s.b,ch:0}});return n}
-function load(){try{const r=localStorage.getItem(KEY);if(r){S=fresh(JSON.parse(r));const o=JSON.parse(r);Object.assign(S,o);STK.forEach(s=>{if(!S.prices[s.id])S.prices[s.id]={p:s.b,ch:0}});return true}}catch(e){}return false}
-function save(q){try{localStorage.setItem(KEY,JSON.stringify(S));if(!q)log('💾 セーブしました')}catch(e){if(!q)log('⚠️ セーブできませんでした')}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);S=Object.assign(fresh(o),o);S.st=Object.assign({casino:0,maxs:0,div:0,streak:0},o.st);return true}}catch(e){}return false}
+function save(q){try{localStorage.setItem(KEY,JSON.stringify(S));if(!q){S.fl.saved=1;log('💾 セーブしました')}}catch(e){if(!q)log('⚠️ セーブできませんでした')}}
 const $=id=>document.getElementById(id);
-const fmt=n=>Math.floor(n).toLocaleString('ja-JP')+'円';
 const job=()=>JOBS.find(j=>j.id===S.job);
+const rank=(id)=>S.rk[id||S.job]||1;
 function log(m){S.log.unshift('Day '+S.day+'　'+m);S.log=S.log.slice(0,30);if(tab==='home')renderLog()}
-const pm=()=>1+0.1*S.pres;
-const ytBonus=()=>S.job==='yt'?Math.min(YT_CAP,Math.floor(S.clicks/100)*0.05):0;
-const clickMult=()=>(job().m+ytBonus())*(1+S.am);
-const clickPow=()=>(1+S.lv)*clickMult()*pm();
-const wage=()=>job().w*Math.pow(1.65,S.rank-1)*pm();
-const promoCost=()=>Math.floor(500*Math.pow(2.2,S.rank-1));
-const upCost=()=>Math.floor(100*Math.pow(1.6,S.lv));
+function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;const c=$('toasts');c.appendChild(d);while(c.children.length>3)c.firstChild.remove();setTimeout(()=>d.remove(),4000)}
+function ad(m,d){S.ads.push({m,d})}
+const isYT=()=>S.job==='yt';
+const adMul=()=>isYT()?Math.max(.1,S.ads.reduce((a,x)=>a*(1+x.m),1)):1;
+const ytB=()=>{if(!isYT())return 0;for(const t of YT)if(S.subs>=t[0])return t[1];return 0};
+const pm=()=>(1+0.1*S.pres)*(1+ytB());
+const clickMult=()=>job().m*(1+S.am);
+const clickPow=()=>Math.pow(1.25,S.lv)*clickMult()*pm()*adMul();
+const autoN=()=>S.job==='prog'?Math.pow(1.8,rank()-1):0;
+const wage=()=>job().w*Math.pow(1.8,rank()-1)*pm()*adMul();
+const promoCost=()=>Math.floor(500*Math.pow(2.2,rank()-1));
+const upCost=()=>Math.floor(50*Math.pow(1.5,S.lv));
 const bizCount=id=>S.biz[id]||0;
-const bizPrice=b=>Math.floor(b.p*Math.pow(1.15,bizCount(b.id))*(S.job==='sme'?0.9:1));
-const bizInc=()=>BIZ.reduce((a,b)=>a+b.r*bizCount(b.id),0)*pm();
+const bizTotal=()=>BIZ.reduce((a,b)=>a+bizCount(b.id),0);
+const bizPrice=b=>Math.floor(b.p*Math.pow(1.15,bizCount(b.id))*(S.job==='corp'?0.9:1));
+const bizMul=()=>S.job==='fact'?1.1:S.job==='ent'?3+0.5*(rank()-1):1;
+const bizInc=()=>BIZ.reduce((a,b)=>a+b.r*bizCount(b.id),0)*bizMul()*pm();
 const held=id=>S.stk[id]||{n:0,avg:0};
+const shares=()=>STK.reduce((a,s)=>a+held(s.id).n,0);
+const kinds=()=>STK.filter(s=>held(s.id).n>0).length;
 const stkVal=()=>STK.reduce((a,s)=>a+held(s.id).n*S.prices[s.id].p,0);
 const divInc=()=>STK.reduce((a,s)=>a+held(s.id).n*S.prices[s.id].p*s.dv,0)*pm();
-const bizAsset=()=>BIZ.reduce((a,b)=>a+b.p*bizCount(b.id),0);
-const assets=()=>S.money+stkVal()+bizAsset();
+const assets=()=>S.money+stkVal()+BIZ.reduce((a,b)=>a+b.p*bizCount(b.id),0);
 const dailyInc=()=>wage()+bizInc()+divInc();
-const achCount=()=>ACH.filter(a=>S.ach[a.id]).length;
+const achCount=()=>A.filter((a,i)=>S.ach[i]).length;
 
 function updateTop(){
  $('tMoney').textContent=fmt(S.money);$('tInc').textContent=fmt(dailyInc());
@@ -131,9 +188,11 @@ function updateTop(){
 function meter(){const m=$('meter');if(!m)return;m.style.width=(S.t/DAY*100)+'%';$('remain').textContent='次の日まであと '+Math.ceil(DAY-S.t)+' 秒'}
 function dayEnd(){
  const w=wage(),b=bizInc(),d=divInc();
- S.money+=w+b+d;S.fl.earned=1;S.day++;S.t=0;
+ S.money+=w+b+d;S.st.div+=d;S.fl.earned=1;S.day++;S.t=0;
  log('📅 日付更新：給料 '+fmt(w)+(b?'／事業 '+fmt(b):''));
  if(d>=1)log('🎁 配当 '+fmt(d)+' を受け取りました');
+ S.ads.forEach(x=>x.d--);S.ads=S.ads.filter(x=>x.d>0);
+ if(isYT())EV.forEach(e=>{if((!e.c||e.c())&&Math.random()<e.p){const t=e.fx();S.subs=Math.max(0,S.subs);toast('📹 '+e.n+' '+t);log('📹 '+e.n+' '+t)}});
  render();
 }
 function moveStocks(){
@@ -143,38 +202,51 @@ function moveStocks(){
 function reward(r){
  const t=[];
  if(r.mult){S.am+=r.mult;t.push('副業収入 +'+Math.round(r.mult*100)+'%')}
- if(r.job){const l=JOBS.filter(j=>j.x&&!S.uj.includes(j.id));if(l.length){const j=l[Math.random()*l.length|0];S.uj.push(j.id);t.push('職業「'+j.n+'」解放')}}
+ if(r.job){if(!S.uj.includes(r.job))S.uj.push(r.job);t.push('職業「'+JOBS.find(j=>j.id===r.job).n+'」解放')}
+ if(r.biz&&S.nb<BIZ.length){S.nb++;t.push('事業「'+BIZ[S.nb-1].n+'」解放')}
  if(r.stock){const l=STK.filter(s=>s.x&&!S.us.includes(s.id));if(l.length){const s=l[Math.random()*l.length|0];S.us.push(s.id);t.push('銘柄「'+s.n+'」追加')}}
  return t.join('、');
 }
-const rText=r=>[r.mult?'副業収入 +'+Math.round(r.mult*100)+'%':'',r.job?'職業解放':'',r.stock?'銘柄追加':''].filter(Boolean).join('＋');
+const rText=r=>[r.mult?'副業収入 +'+Math.round(r.mult*100)+'%':'',r.job?'職業解放':'',r.biz?'事業解放':'',r.stock?'銘柄追加':''].filter(Boolean).join('＋');
 function checkAch(){
  let ch=false;
- ACH.forEach(a=>{if(!S.ach[a.id]&&a.ok()){S.ach[a.id]=1;ch=true;log('🏆 実績「'+a.n+'」達成！'+reward(a.r))}});
+ A.forEach((a,i)=>{if(!S.ach[i]&&a.ok()){S.ach[i]=1;ch=true;const t=reward(a.r);log('🏆 実績「'+a.n+'」達成！'+t);toast('🏆 実績達成：'+a.n+'（'+t+'）')}});
  if(ch){save(1);render()}
 }
-function tick(){S.t+=0.1;if(S.t>=DAY)dayEnd();updateTop();meter();checkAch()}
+let tk=0;
+function tick(){
+ S.t+=0.1;tk++;
+ if(tk%10===0&&autoN()>0){S.money+=clickPow()*autoN()}
+ if(S.t>=DAY)dayEnd();
+ updateTop();meter();if(tk%5===0)checkAch();
+}
 
 function coinClick(e){
- const g=clickPow();S.money+=g;S.clicks++;S.tc++;S.fl.earned=1;
+ let g=clickPow();
+ if(S.job==='conv'&&Math.random()<.1)g*=1.5;
+ if(S.job==='gamb'&&Math.random()<.01){g*=100*Math.pow(1.2,rank()-1);toast('🎰 大当たり！ '+fmt(g))}
+ S.money+=g;S.clicks++;S.tc++;S.fl.earned=1;if(isYT())S.subs++;
  if(S.clicks%100===0)log('👆 副業 '+S.clicks+' 回達成');
- const p=document.createElement('div');p.className='pop';p.textContent='+'+g.toFixed(g<10?1:0);
+ const p=document.createElement('div');p.className='pop';p.textContent='+'+(g<10?g.toFixed(1):N(Math.floor(g)));
  p.style.left=(e.clientX||innerWidth/2)-10+'px';p.style.top=(e.clientY||300)-30+'px';
  document.body.appendChild(p);setTimeout(()=>p.remove(),700);
  updateTop();const ci=$('clickInfo');if(ci)ci.textContent=clickInfo();
+ const ys=$('ytSubs');if(ys)ys.textContent=N(Math.floor(S.subs));
 }
-const clickInfo=()=>'1回 '+clickPow().toFixed(1)+'円（倍率 ×'+clickMult().toFixed(2)+(S.pres?'／転生 ×'+pm().toFixed(1):'')+'）　副業 '+S.clicks+' 回';
+const clickInfo=()=>'1回 '+clickPow().toFixed(1)+'円（強化 ×'+Math.pow(1.25,S.lv).toFixed(2)+'／職業 ×'+clickMult().toFixed(2)+(S.pres?'／転生 ×'+(1+.1*S.pres).toFixed(1):'')+'）　副業 '+S.clicks+' 回';
 
 function buyUp(){const c=upCost();if(S.money<c)return;S.money-=c;S.lv++;log('⚡ 副業強化 Lv.'+S.lv+' を購入');save(1);render()}
-function promote(){const c=promoCost();if(S.money<c)return;S.money-=c;S.rank++;log('🎖️ '+job().n+' ランク '+S.rank+' に昇進');save(1);render()}
+function promote(){const c=promoCost();if(S.money<c||job().w===0&&S.job==='neet')return;S.money-=c;S.rk[S.job]=rank()+1;log('🎖️ '+job().n+' ランク '+rank()+' に昇進');save(1);render()}
 function change(id){
- if(id===S.job)return;const c=S.fl.changed?0:100000;if(S.money<c)return;
- S.money-=c;S.fl.changed=1;S.job=id;S.rank=1;log('🔄 '+job().n+'に転職しました'+(c?'（'+fmt(c)+'）':''));save(1);render();
+ if(id===S.job)return;const first=!S.own.includes(id)&&id!=='neet',c=first?JOBS.find(j=>j.id===id).c:0;
+ if(id!=='neet'&&!S.uj.includes(id)||S.money<c)return;
+ S.rk[S.job]=Math.max(1,rank()-5);S.money-=c;if(first)S.own.push(id);S.job=id;
+ log('🔄 '+job().n+'に転職しました'+(c?'（'+fmt(c)+'）':''));save(1);render();
 }
-function buyBiz(id){const b=BIZ.find(x=>x.id===id),c=bizPrice(b);if(S.money<c)return;S.money-=c;S.biz[id]=bizCount(id)+1;S.fl.biz=1;log('🏪 '+b.n+'を購入（'+S.biz[id]+'件目）');save(1);render()}
+function buyBiz(id){const b=BIZ.find(x=>x.id===id),c=bizPrice(b);if(S.money<c)return;S.money-=c;S.biz[id]=bizCount(id)+1;log('🏪 '+b.n+'を購入（'+S.biz[id]+'件目）');save(1);render()}
 function buyStk(id,q){
  const s=STK.find(x=>x.id===id),p=S.prices[id].p,mx=Math.floor(S.money/p),n=Math.min(q==='max'?mx:q,mx);if(n<1)return;
- const h=held(id);h.avg=(h.avg*h.n+p*n)/(h.n+n);h.n+=n;S.stk[id]=h;S.money-=p*n;S.fl.stk=1;
+ const h=held(id);h.avg=(h.avg*h.n+p*n)/(h.n+n);h.n+=n;S.stk[id]=h;S.money-=p*n;
  log('📊 '+s.n+'を'+n+'株購入（'+fmt(p)+'／株）');render();
 }
 function sellStk(id,q){
@@ -183,15 +255,36 @@ function sellStk(id,q){
 }
 function prestige(){
  if(assets()<GOAL)return;
- if(!confirm('転生しますか？\n所持金・日数・職業ランク・強化・事業・株式がリセットされ、転生ボーナスが +10% 加算されます。'))return;
+ if(!confirm('転生しますか？\n所持金・日数・職業ランク・強化・事業・株式・登録者がリセットされ、転生ボーナスが +10% 加算されます。'))return;
  if(S.day<=10)S.fl.fast=1;
  const n=S.pres+1;S.pres=n;S=fresh(S);
  log('✨ 転生しました！（'+n+'回目）');save(1);render();
 }
 function resetAll(){if(!confirm('セーブデータを消して最初からやり直しますか？（実績も消えます）'))return;try{localStorage.removeItem(KEY)}catch(e){}S=fresh();log('🌱 ゲーム開始');render()}
 
+const SYM=['🍒','🍋','🔔','⭐','7️⃣'],MUL=[3,5,10,20,50];
+function slot(bet){
+ if(S.money<bet)return;S.money-=bet;S.st.casino++;
+ const r=[0,0,0].map(()=>Math.random()*5|0);let pay=0;
+ if(r[0]===r[1]&&r[1]===r[2]){pay=bet*MUL[r[0]];if(r[0]===4)S.fl.jack=1}
+ else if(r[0]===r[1]||r[1]===r[2]||r[0]===r[2])pay=Math.floor(bet*.5);
+ S.money+=pay;if(pay>=1e5)S.fl.big=1;
+ slotMsg[bet]=SYM[r[0]]+SYM[r[1]]+SYM[r[2]]+'　'+(pay>bet?'当たり！ +'+fmt(pay-bet):pay?'ハズレ（'+fmt(pay)+'戻り）':'ハズレ');
+ render();
+}
+function flip(g){
+ const c=S.coin;
+ if(!c.on){const b=Math.floor(Number($('bet').value));if(!(b>=1)||b>S.money){coinMsg='掛け金が正しくありません';return render()}
+  S.money-=b;c.on=1;c.bet=b;c.pot=b;S.st.casino++;S.st.streak=0}
+ const r=Math.random()<.5?'表':'裏';
+ if(g===r){c.pot*=2;S.st.streak++;S.st.maxs=Math.max(S.st.maxs,S.st.streak);if(c.pot>=1e5)S.fl.big=1;coinMsg='「'+r+'」当たり！ 現在 '+fmt(c.pot)}
+ else{if(c.bet>=1e4)S.fl.lost=1;coinMsg='「'+r+'」ハズレ… 0円になりました';c.on=0;c.pot=0;S.st.streak=0}
+ render();
+}
+function cash(){const c=S.coin;S.money+=c.pot;coinMsg=fmt(c.pot)+'を受け取りました';c.on=0;c.pot=0;S.st.streak=0;render()}
+
 function renderNav(){
- const T=[['home','🏠 ホーム'],['job','💼 職業'],['biz','🏪 事業'],['stock','📊 株式'],['pres','✨ 転生'],['ach','🏆 実績 '+achCount()+'/'+ACH.length]];
+ const T=[['home','🏠 ホーム'],['job','💼 職業'],['biz','🏪 事業'],['stock','📊 株式'],['casino','🎰 カジノ'],['pres','✨ 転生'],['ach','🏆 実績 '+achCount()+'/'+A.length]];
  $('nav').innerHTML=T.map(t=>'<button class="'+(t[0]===tab?'on':'')+'" onclick="go(\''+t[0]+'\')">'+t[1]+'</button>').join('');
 }
 function go(t){tab=t;render()}
@@ -203,20 +296,24 @@ function render(){
   const uc=upCost(),j=job();
   h='<div class="card"><div class="bar"><i id="meter"></i></div><div class="c" style="font-size:13px;color:var(--sub);margin-top:4px" id="remain"></div></div>'+
   '<div class="card c"><button id="coin" onclick="coinClick(event)" aria-label="副業で稼ぐ">🪙</button><div style="font-size:13px;color:var(--sub)">タップして副業</div><div style="font-size:13px;color:var(--sub)" id="clickInfo">'+clickInfo()+'</div></div>'+
-  '<div class="card"><h3>'+j.e+' '+j.n+'</h3><div style="font-size:14px">ランク '+S.rank+'／基本日給 '+fmt(wage())+'</div></div>'+
-  '<div class="card"><h3>⚡ 副業強化</h3><div class="row"><div class="t">次：Lv.'+(S.lv+1)+'<small>副業の基本報酬 '+(1+S.lv)+'円 → '+(2+S.lv)+'円</small></div><button class="b" onclick="buyUp()" '+(S.money<uc?'disabled':'')+'>'+fmt(uc)+'</button></div></div>'+
-  '<div class="card"><h3>👤 プロフィール</h3><div style="font-size:14px">職業：'+j.n+'（ランク'+S.rank+'）／転生 '+S.pres+'回／強化 Lv.'+S.lv+'／実績 '+achCount()+'/'+ACH.length+'／実績ボーナス 副業収入 +'+Math.round(S.am*100)+'%</div></div>'+
+  (isYT()?'<div class="card"><h3>📹 YouTuber</h3><div style="font-size:14px">登録者 <b id="ytSubs">'+N(Math.floor(S.subs))+'</b> 人／全収入 +'+Math.round(ytB()*100)+'%／広告収入 ×'+adMul().toFixed(2)+'<br><small style="color:var(--sub)">副業1回で登録者+1。1日の終わりにランダムイベントが起きます。</small></div></div>':'')+
+  '<div class="card"><h3>'+j.e+' '+j.n+'</h3><div style="font-size:14px">ランク '+rank()+'／基本日給 '+fmt(wage())+(autoN()?'／自動クリック '+autoN().toFixed(1)+'回/秒':'')+'</div></div>'+
+  '<div class="card"><h3>⚡ 副業強化</h3><div class="row"><div class="t">次：Lv.'+(S.lv+1)+'<small>強化倍率 ×'+Math.pow(1.25,S.lv).toFixed(2)+' → ×'+Math.pow(1.25,S.lv+1).toFixed(2)+'</small></div><button class="b" onclick="buyUp()" '+(S.money<uc?'disabled':'')+'>'+fmt(uc)+'</button></div></div>'+
+  '<div class="card"><h3>👤 プロフィール</h3><div style="font-size:14px">職業：'+j.n+'（ランク'+rank()+'）／転生 '+S.pres+'回／強化 Lv.'+S.lv+'／実績 '+achCount()+'/'+A.length+'／実績ボーナス 副業収入 +'+Math.round(S.am*100)+'%</div></div>'+
   '<div class="card"><h3>📝 最近の出来事</h3><ul id="log"></ul></div>'+
-  '<div class="card" style="display:flex;gap:8px"><button class="b" onclick="save()">💾 セーブ</button><button class="b alt" onclick="resetAll()">🗑️ 最初からやり直す</button></div>';
+  '<div class="card" style="display:flex;gap:8px"><button class="b" onclick="save();render()">💾 セーブ</button><button class="b alt" onclick="resetAll()">🗑️ 最初からやり直す</button></div>';
  }else if(tab==='job'){
-  const c=promoCost(),fc=S.fl.changed?0:100000,av=JOBS.filter(j=>!j.x||S.uj.includes(j.id)),lk=JOBS.filter(j=>j.x&&!S.uj.includes(j.id)).length;
-  h='<div class="card"><h3>🎖️ 昇進</h3><div class="row"><div class="t">'+job().n+'：ランク '+S.rank+' → '+(S.rank+1)+'<small>日給 '+fmt(wage())+' → '+fmt(wage()*1.65)+'</small></div><button class="b" onclick="promote()" '+(S.money<c?'disabled':'')+'>'+fmt(c)+'</button></div></div>'+
-  '<div class="card"><h3>💼 転職（ランクは1に戻ります）</h3><div style="font-size:13px;color:var(--sub);margin-bottom:4px">'+(fc?'はじめての転職には10万円が必要です。以降は無料。':'転職は無料です。')+'</div>'+
-  av.map(j=>'<div class="row"><div class="t">'+j.e+' '+j.n+(j.id===S.job?'（現在）':'')+'<small>'+j.d+'<br>基本日給 '+fmt(j.w)+'／副業倍率 ×'+j.m+'</small></div><button class="b" onclick="change(\''+j.id+'\')" '+(j.id===S.job||S.money<fc?'disabled':'')+'>'+(fc?fmt(fc):'転職')+'</button></div>').join('')+
-  (lk?'<div class="row lock"><div class="t">🔒 未解放の職業 '+lk+'種<small>実績を達成するとランダムで解放されます</small></div></div>':'')+'</div>';
+  const c=promoCost();
+  h='<div class="card"><h3>🎖️ 昇進</h3><div class="row"><div class="t">'+job().n+'：ランク '+rank()+' → '+(rank()+1)+'<small>'+(S.job==='neet'?'無職は昇進できません':'日給 '+fmt(wage())+' → '+fmt(wage()*1.8))+'</small></div><button class="b" onclick="promote()" '+(S.money<c||S.job==='neet'?'disabled':'')+'>'+fmt(c)+'</button></div></div>'+
+  '<div class="card"><h3>💼 職業一覧</h3><div style="font-size:13px;color:var(--sub);margin-bottom:4px">初めての職業は解放条件と費用が必要。以降は無料。転職すると、今の職業のランクが5下がります。</div>'+
+  JOBS.map(j=>{
+   const un=j.id==='neet'||S.uj.includes(j.id),first=!S.own.includes(j.id)&&j.id!=='neet',c=first?j.c:0;
+   const a=A.find(x=>x.r.job===j.id);
+   return '<div class="row'+(un?'':' lock')+'"><div class="t">'+(un?j.e:'🔒')+' '+j.n+(j.id===S.job?'（現在）':'')+'<small>'+j.d+'<br>基本日給 '+fmt(j.w)+'／副業倍率 ×'+j.m+(un&&rank(j.id)>1?'／ランク'+rank(j.id):'')+(un?'':'<br>解放：実績「'+a.n+'」（'+a.d+'）')+'</small></div><button class="b" onclick="change(\''+j.id+'\')" '+(!un||j.id===S.job||S.money<c?'disabled':'')+'>'+(c?fmt(c):'転職')+'</button></div>'}).join('')+'</div>';
  }else if(tab==='biz'){
-  h='<div class="card"><h3>🏪 事業</h3><div style="font-size:14px;margin-bottom:6px">事業収益の合計：'+fmt(bizInc())+' / 日'+(S.job==='sme'?'（中小企業割引 10%適用中）':'')+'</div>'+
-  BIZ.map(b=>{const c=bizPrice(b);return '<div class="row"><div class="t">'+b.e+' '+b.n+'（所有 '+bizCount(b.id)+'）<small>1日あたり '+fmt(b.r*pm())+'／件</small></div><button class="b" onclick="buyBiz(\''+b.id+'\')" '+(S.money<c?'disabled':'')+'>'+fmt(c)+'</button></div>'}).join('')+'</div>';
+  h='<div class="card"><h3>🏪 事業</h3><div style="font-size:14px;margin-bottom:6px">事業収益の合計：'+fmt(bizInc())+' / 日'+(bizMul()!==1?'（職業ボーナス ×'+bizMul().toFixed(2)+'）':'')+'</div>'+
+  BIZ.slice(0,S.nb).map(b=>{const c=bizPrice(b);return '<div class="row"><div class="t">'+b.e+' '+b.n+'（所有 '+bizCount(b.id)+'）<small>1日あたり '+fmt(b.r*bizMul()*pm())+'／件</small></div><button class="b" onclick="buyBiz(\''+b.id+'\')" '+(S.money<c?'disabled':'')+'>'+fmt(c)+'</button></div>'}).join('')+
+  (S.nb<BIZ.length?'<div class="row lock"><div class="t">🔒 未解放の事業 '+(BIZ.length-S.nb)+'種<small>実績を達成すると順番に解放されます</small></div></div>':'')+'</div>';
  }else if(tab==='stock'){
   const av=STK.filter(s=>!s.x||S.us.includes(s.id)),lk=STK.length-av.length;
   h='<div class="card"><h3>📊 株式投資</h3><div style="font-size:13px;color:var(--sub);margin-bottom:6px">評価額合計 '+fmt(stkVal())+'／配当は1日の終わりに受け取り。株価は約5秒ごとに変動するゲーム内の簡易シミュレーションです（現実の市場とは無関係）。</div>'+
@@ -225,13 +322,21 @@ function render(){
    const sb=(q,l)=>'<button class="b sell" onclick="sellStk(\''+i+'\','+(q==='max'?"'max'":q)+')" '+(k.n<1?'disabled':'')+'>'+l+'</button>';
    return '<div class="row"><div class="t">'+s.e+' '+s.n+'　<b>'+fmt(o.p)+'</b> <span class="'+(o.ch>=0?'up':'down')+'">'+(o.ch>=0?'▲':'▼')+Math.abs(o.ch)+'</span><small>保有 '+k.n+'株／評価額 '+fmt(k.n*o.p)+'／平均取得 '+(k.n?fmt(k.avg):'-')+'／配当率 '+(s.dv*100).toFixed(2)+'%/日</small></div><div><div class="bt">'+bb(1,'買×1')+bb(10,'×10')+bb('max','最大')+'</div><div class="bt" style="margin-top:4px">'+sb(1,'売×1')+sb(10,'×10')+sb('max','全部')+'</div></div></div>'}).join('')+
   (lk?'<div class="row lock"><div class="t">🔒 未解放の銘柄 '+lk+'社<small>実績を達成するとランダムで追加されます</small></div></div>':'')+'</div>';
+ }else if(tab==='casino'){
+  const c=S.coin;
+  h='<div class="card"><h3>🎰 スロット</h3><div style="font-size:13px;color:var(--sub)">3つ揃いで ×3〜×50（7️⃣が最高）。2つ揃いは半額戻り。</div>'+
+  [10,100,1000,10000].map(b=>'<div class="row"><div class="t">'+fmt(b)+'マシン<small>'+(slotMsg[b]||'')+'</small></div><button class="b" onclick="slot('+b+')" '+(S.money<b?'disabled':'')+'>回す</button></div>').join('')+'</div>'+
+  '<div class="card"><h3>🪙 コイン投げ</h3><div style="font-size:13px;color:var(--sub);margin-bottom:6px">表か裏を当てれば2倍。続けるか、やめて受け取るか選べます。外れると0円。</div>'+
+  (c.on?'<div style="font-size:15px;margin-bottom:8px">現在の賞金：<b>'+fmt(c.pot)+'</b>（連勝 '+S.st.streak+'）</div><div class="bt"><button class="b" onclick="flip(\'表\')">続ける：表</button><button class="b" onclick="flip(\'裏\')">続ける：裏</button><button class="b alt" onclick="cash()">やめて受け取る</button></div>':
+  '<div class="bt" style="align-items:center"><input id="bet" type="number" inputmode="numeric" min="1" placeholder="掛け金（円）" value="100"><button class="b" onclick="flip(\'表\')">表</button><button class="b" onclick="flip(\'裏\')">裏</button></div>')+
+  '<div style="font-size:14px;margin-top:8px">'+coinMsg+'</div></div>';
  }else if(tab==='pres'){
   const a=assets(),r=Math.min(1,a/GOAL);
   h='<div class="card"><h3>✨ 転生</h3><div style="font-size:14px">現在の総資産：'+fmt(a)+'<br>必要な総資産：'+fmt(GOAL)+'</div><div class="bar" style="margin:10px 0"><i style="width:'+(r*100)+'%"></i></div><div style="font-size:13px;color:var(--sub)">達成率 '+(r*100).toFixed(2)+'%</div></div>'+
-  '<div class="card"><div style="font-size:14px;margin-bottom:8px">転生回数：'+S.pres+'回（現在のボーナス ×'+pm().toFixed(1)+'）<br>転生すると ×'+(1+0.1*(S.pres+1)).toFixed(1)+' になり、副業収入と自動収入が増えます。</div><button class="b" onclick="prestige()" '+(a<GOAL?'disabled':'')+'>✨ 転生する</button></div>';
+  '<div class="card"><div style="font-size:14px;margin-bottom:8px">転生回数：'+S.pres+'回（現在のボーナス ×'+(1+.1*S.pres).toFixed(1)+'）<br>転生すると ×'+(1+0.1*(S.pres+1)).toFixed(1)+' になり、副業収入と自動収入が増えます。</div><button class="b" onclick="prestige()" '+(a<GOAL?'disabled':'')+'>✨ 転生する</button></div>';
  }else{
-  h='<div class="card"><h3>🏆 実績　'+achCount()+' / '+ACH.length+' 達成</h3><div class="bar" style="margin:6px 0 8px"><i style="width:'+(achCount()/ACH.length*100)+'%"></i></div>'+
-  ACH.map(a=>{const d=S.ach[a.id];return '<div class="row'+(d?'':' lock')+'"><div class="t">'+(d?'✅':'🔒')+' '+a.n+'<small>'+a.d+'</small></div><small style="color:var(--acc2)">'+rText(a.r)+'</small></div>'}).join('')+'</div>';
+  h='<div class="card"><h3>🏆 実績　'+achCount()+' / '+A.length+' 達成</h3><div class="bar" style="margin:6px 0 8px"><i style="width:'+(achCount()/A.length*100)+'%"></i></div>'+
+  A.map((a,i)=>{const d=S.ach[i];return '<div class="row'+(d?'':' lock')+'"><div class="t">'+(d?'✅':'🔒')+' '+a.n+'<small>'+a.d+'</small></div><small style="color:var(--acc2)">'+rText(a.r)+'</small></div>'}).join('')+'</div>';
  }
  p.innerHTML=h;if(tab==='home'){renderLog();meter()}
 }
